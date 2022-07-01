@@ -150,24 +150,38 @@ def show_exam_result(request, course_id, submission_id):
     total_marks = 0
     marks = 0
     context = {}
-    qs = []
+    qs = [ids.choice_qs.id for ids in choices.choices.all()]
     print(choices)
-    for choice in choices.choices.all():
-        print(choice.is_correct)
-        if choice.is_correct:
-            marks += choice.choice_qs.question_mark
-            qs.append(choice.choice_qs.id)
-            print(choice.choice_qs.question_mark)
-        else:
-            print(choice.is_correct)
-            qs.append(choice.choice_qs.id)
-            continue
+    # for choice in choices.choices.all():
+    #     print(choice.is_correct)
+    #     if choice.is_correct:
+    #         marks += choice.choice_qs.question_mark
+    #         qs.append(choice.choice_qs.id)
+    #         print(choice.choice_qs.question_mark)
+    #     else:
+    #         print(choice.is_correct)
+    #         qs.append(choice.choice_qs.id)
+    #         continue
     dup = []
     for id in qs:
         if id not in dup:
-            total_marks += Question.objects.get(id=id).question_mark
+            dup.append(id)
 
-    
+    for querries in dup:
+        for i in Question.objects.get(id=querries).choice_set.all():
+            if i.is_correct:
+                print(i.choice_text)
+                total_marks += i.choice_qs.question_mark
+            
+            if i.is_correct and i not in choices.choices.all():
+                pass
+            elif i.is_correct and i in choices.choices.all():
+                print(i.choice_text)
+                marks += i.choice_qs.question_mark
+                print('WOW')
+                print(marks)
+            elif not i.is_correct and i in choices.choices.all():
+                marks -= i.choice_qs.question_mark
     grade = (marks/total_marks) * 100
     grade = '{}'.format(grade)
     context['grade'] = float(grade)
